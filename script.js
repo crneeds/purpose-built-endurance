@@ -35,13 +35,31 @@ const observer = new IntersectionObserver(entries => {
 }, { rootMargin: '-35% 0px -50% 0px', threshold: [0.1, 0.25, 0.5] });
 sections.forEach(section => observer.observe(section));
 
-form?.addEventListener('submit', event => {
+form?.addEventListener('submit', async event => {
   event.preventDefault();
+
   if (!form.checkValidity()) {
     form.reportValidity();
     return;
   }
-  statusEl.textContent = 'The form design is ready. We’ll connect it to a live email/form service before launch.';
-});
 
+  statusEl.textContent = 'Sending...';
+
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Submission failed');
+
+    form.reset();
+    statusEl.textContent = 'Thanks! Your message has been sent. I’ll be in touch soon.';
+  } catch (error) {
+    statusEl.textContent = 'Sorry, something went wrong. Please try again or email me directly.';
+  }
+});
 document.getElementById('year').textContent = new Date().getFullYear();
